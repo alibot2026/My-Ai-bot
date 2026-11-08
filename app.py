@@ -14,7 +14,7 @@ GROQ_API_KEY = "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"
 # ============================================================
 
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-TEXT_MODEL = "llama-3.1-8b-instant" 
+TEXT_MODEL = MODEL = "openai/gpt-oss-120b"
 VISION_MODEL = "llama-3.2-11b-vision-preview"
 
 # 🧠 AI Ki Memory (Aapki Saari Requirements)
