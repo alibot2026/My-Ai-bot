@@ -10,14 +10,13 @@ app = Flask(__name__)
 # ============================================================
 #  YAHAN APNI GROQ API KEY PASTE KAREIN (Quotes ke andar)
 # ============================================================
-GROQ_API_KEY = "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"
+GROQ_API_KEY = "gsk_Jxx9svGcWquEubsSROPSWGdyb3FYXxuBuFAjVXYK3qcvjhW"
 # ============================================================
 
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-TEXT_MODEL = MODEL = "openai/gpt-oss-120b"
+TEXT_MODEL = "openai/gpt-oss-120b" 
 VISION_MODEL = "llama-3.2-11b-vision-preview"
 
-# 🧠 AI Ki Memory (Aapki Saari Requirements)
 SYSTEM_PROMPT = """Aap ek bohot friendly, smart aur madadgar AI Assistant hain. Aapka naam "Master Ali AI" hai.
 Aap Urdu aur English dono mein baat karte hain aur hamesha khushmizaj andaz mein jawab dete hain.
 
@@ -51,7 +50,7 @@ def ask_groq(msg, img_b64=None):
         r = requests.post(GROQ_URL, headers=headers, json=data, timeout=30)
         if r.status_code == 200:
             return r.json()["choices"][0]["message"]["content"]
-        return f"Error {r.status_code}"
+        return f"Error {r.status_code}: {r.text}"
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -59,7 +58,6 @@ def make_image_url(prompt):
     encoded = urllib.parse.quote(prompt + ", high quality, detailed, cinematic lighting")
     return f"https://image.pollinations.ai/prompt/{encoded}?width=768&height=768&nologo=true"
 
-# 🎨 UI Design (100% Fixed for Old Phones + History)
 HTML = """
 <!DOCTYPE html>
 <html>
@@ -109,7 +107,7 @@ body { display:flex; justify-content:center; }
         <button class="clear-btn" onclick="clearHistory()">Clear</button>
     </div>
     <div class="chat" id="chat">
-        <div class="msg bot">Salam! Main Master Ali AI hoon. Meri memory save hai! Mujhse kuch bhi poochein ya image banwayein! 🌟</div>
+        <div class="msg bot">Salam! Main Master Ali AI hoon. Mujhse kuch bhi poochein ya image banwayein! 🌟</div>
     </div>
     <div class="modes">
         <button class="mode-btn active" id="chatMode" onclick="setMode('chat')">💬 Photo/Chat</button>
@@ -128,8 +126,6 @@ let mode = 'chat';
 let uploadedImageBase64 = null;
 const chat = document.getElementById('chat');
 const inp = document.getElementById('inp');
-
-// History Load Karne Ka System
 let history = JSON.parse(localStorage.getItem('ali_chat_history')) || [];
 
 window.onload = () => {
@@ -153,10 +149,10 @@ function saveToHistory(role, text, img=null) {
 }
 
 function clearHistory() {
-    if(!confirm("Kya aap pakka chat delete karna chahte hain?")) return;
+    if(!confirm("Chat delete karein?")) return;
     localStorage.removeItem('ali_chat_history');
     history = [];
-    chat.innerHTML = '<div class="msg bot">Chat history clear ho gayi! Naya sawal poochein. 🌟</div>';
+    chat.innerHTML = '<div class="msg bot">History clear ho gayi! 🌟</div>';
 }
 
 function setMode(m) {
@@ -168,7 +164,6 @@ function setMode(m) {
     if (m === 'image') { uploadedImageBase64 = null; document.getElementById('preview').style.display = 'none'; }
 }
 
-// 🚨 PHOTO COMPRESSOR (Error 400 Fix)
 function handleFile() {
     const file = document.getElementById('fileInput').files[0];
     if (!file) return;
@@ -198,9 +193,7 @@ function handleFile() {
     reader.readAsDataURL(file);
 }
 
-// Keyboard khulte hi neeche scroll (Old Phone Fix)
 window.addEventListener('resize', () => { setTimeout(() => { chat.scrollTop = chat.scrollHeight; }, 100); });
-inp.addEventListener('focus', () => { setTimeout(() => { chat.scrollTop = chat.scrollHeight; }, 200); });
 
 async function send() {
     const text = inp.value.trim();
@@ -220,20 +213,21 @@ async function send() {
     saveToHistory('user', text, imgData);
     
     inp.value = ''; chat.scrollTop = chat.scrollHeight;
+    const currentBase64 = uploadedImageBase64;
     uploadedImageBase64 = null;
     document.getElementById('preview').style.display = 'none';
     document.getElementById('fileInput').value = '';
     
     const t = document.createElement('div');
     t.className = 'typing';
-    t.innerText = mode === 'chat' ? 'Soch raha hoon...' : '🎨 Art ban rahi hai (10-20 sec)...';
+    t.innerText = mode === 'chat' ? 'Soch raha hoon...' : '🎨 Art ban rahi hai...';
     chat.appendChild(t); chat.scrollTop = chat.scrollHeight;
     
     try {
         if (mode === 'chat') {
             const r = await fetch('/chat', {
                 method:'POST', headers:{'Content-Type':'application/json'}, 
-                body:JSON.stringify({message:text, image: imgData ? uploadedImageBase64 || imgData.split(',')[1] : null})
+                body:JSON.stringify({message:text, image: currentBase64})
             });
             const d = await r.json();
             t.remove();
@@ -263,7 +257,6 @@ async function send() {
         t.innerText = 'Internet check karein.'; 
     }
 }
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/service-worker.js');
 </script>
 </body>
 </html>
